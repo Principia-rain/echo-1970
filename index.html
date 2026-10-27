@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>回声·1970 — 中科大主题解谜 ARG（原创同人）</title>
+<meta name="description" content="《回声·1970》：原创网页解谜游戏（ARG）。七件档案、八道封印，故事以中国科学技术大学为背景。全部原创，零外部资源，进度只存在你的浏览器里。">
+<meta name="theme-color" content="#141210">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%23b3382e'/%3E%3Ctext x='32' y='45' font-size='34' text-anchor='middle' fill='%23f6eeda' font-family='serif'%3E%E5%9B%9E%3C/text%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#141210; --ink:#221d15; --paper:#f3ead7; --paper2:#ece1c8;
+  --accent:#b3382e; --muted:#8a8071; --line:#3a352a; --seal:#6a6252;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; color:#d8d0c0; background:var(--bg);
+  background-image:radial-gradient(1200px 600px at 50% -10%, #1d1a14 0%, var(--bg) 60%);
+  font-family:"Noto Serif SC","Source Han Serif SC","SimSun","Songti SC",serif;
+  line-height:1.9;
+}
+.wrap{max-width:780px;margin:0 auto;padding:28px 18px 90px}
+header.site{text-align:center;padding:30px 0 4px}
+.archive-no{font-size:12px;letter-spacing:.4em;color:var(--muted)}
+h1.title{margin:10px 0 4px;font-size:34px;letter-spacing:.18em;color:#f3ead7;font-weight:700}
+.sub{margin:0;font-size:13.5px;color:var(--muted);letter-spacing:.08em}
+.progress{display:flex;gap:10px;justify-content:center;margin:22px 0 4px;flex-wrap:wrap}
+.seal{width:30px;height:30px;border-radius:50%;border:1px solid var(--seal);display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--seal);transition:all .4s}
+.seal.done{background:var(--accent);border-color:var(--accent);color:#f7efdc}
+.card{
+  background:linear-gradient(180deg,#f6eeda,#efe4cb); color:var(--ink);
+  border-radius:6px; padding:24px 24px 20px; margin:24px 0; position:relative;
+  box-shadow:0 8px 30px rgba(0,0,0,.5), inset 0 0 70px rgba(160,140,90,.13);
+}
+.card.locked{background:#1b1815;color:#6f675a;border:1px dashed var(--line);box-shadow:none;padding:18px 22px}
+.card.locked h2{color:#8a8071;font-size:17px;margin:4px 0 2px}
+.locked-note{font-size:13px;margin:2px 0 0}
+.tag{font-size:11.5px;color:#8a6d3b;letter-spacing:.28em;margin-bottom:4px}
+.card h2{margin:2px 0 10px;font-size:21px;letter-spacing:.06em}
+.doc{font-size:16px;line-height:2.05;white-space:pre-wrap;word-break:break-word}
+.doc .mono{font-family:"Courier New",Consolas,monospace;letter-spacing:.05em}
+.question{font-weight:700;margin:16px 0 4px;font-size:16.5px}
+.answer-row{display:flex;gap:10px;margin-top:10px;flex-wrap:wrap}
+input.answer,textarea.free{
+  background:#fffdf6;border:1px solid #c9b98f;padding:10px 12px;font-size:16px;
+  border-radius:4px;color:var(--ink);font-family:inherit;width:100%;
+}
+.answer-row input.answer{flex:1;min-width:200px;width:auto}
+textarea.free{min-height:120px;resize:vertical;line-height:1.8}
+button{
+  background:var(--accent);color:#f7efdc;border:none;padding:10px 20px;border-radius:4px;
+  cursor:pointer;font-size:15px;letter-spacing:.14em;font-family:inherit;
+}
+button:hover{filter:brightness(1.08)}
+button.ghost{background:transparent;border:1px solid var(--seal);color:#b9ae96}
+button.ghost:hover{border-color:var(--accent);color:var(--accent)}
+.hints{margin-top:12px}
+.hint{
+  background:rgba(179,56,46,.07);border-left:3px solid var(--accent);
+  padding:8px 12px;margin-top:8px;font-size:14px;color:#5c4a33;border-radius:0 4px 4px 0;
+}
+.err{color:#8c2f27;font-size:13.5px;margin-top:10px;min-height:1.2em}
+.reveal{margin-top:18px;padding-top:16px;border-top:1px dashed #c9b98f;animation:fadeUp .9s ease both}
+.reveal .doc{font-size:15.5px}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.stamp{
+  position:absolute;top:16px;right:16px;transform:rotate(-10deg);
+  border:3px solid var(--accent);color:var(--accent);padding:3px 12px;
+  font-weight:700;letter-spacing:.3em;border-radius:4px;font-size:14px;opacity:.85;
+  animation:stampIn .5s cubic-bezier(.2,1.6,.4,1) both;
+}
+@keyframes stampIn{from{opacity:0;transform:rotate(-10deg) scale(2.2)}to{opacity:.85;transform:rotate(-10deg) scale(1)}}
+.shake{animation:shake .4s}
+@keyframes shake{25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
+.cert{border:3px double var(--accent);border-radius:6px;padding:26px 22px;text-align:center;background:#fbf5e6;margin-top:18px}
+.cert h3{margin:0 0 6px;letter-spacing:.2em;font-size:20px}
+.cert-line{margin:8px 0;font-size:15px}
+.cert-msg{font-size:17px;margin:12px 0;letter-spacing:.03em}
+.about{margin-top:36px;color:#9a917f;font-size:13px}
+.about summary{cursor:pointer;color:#b9ae96}
+.about li{margin:4px 0}
+footer{
+  margin-top:56px;padding-top:18px;border-top:1px solid #2a271f;
+  font-size:12.5px;color:#7a7161;line-height:2;
+}
+footer a{color:#a89a7c;text-decoration:none;border-bottom:1px dotted #5a5344}
+footer a:hover{color:var(--accent)}
+.linkish{cursor:pointer;color:#a89a7c;border-bottom:1px dotted #5a5344}
+.linkish:hover{color:var(--accent)}
+@media (prefers-reduced-motion: reduce){
+  *{animation:none!important;transition:none!important}
+}
+@media print{
+  body{background:#fff}
+  .wrap>*{display:none!important}
+  .cert-only{display:block!important;position:static!important}
+  .card,.cert{box-shadow:none}
+  button{display:none!important}
+}
+</style>
+</head>
+<body>
+<!--
+  ══════════════════════════════════════════════════════
+   E-1970 回声档案馆 · 编目注记
+
+   你正在读这座房子的图纸。这本身就是一个线索。
+
+   不挂门牌的那间屋子：
+   下面这串字符是一扇门——
+   用最老实、最古老的办法把它打开。
+
+   5Zue5aOw
+  ══════════════════════════════════════════════════════
+-->
+<div class="wrap">
+  <header class="site">
+    <div class="archive-no">E-1970 · 回声档案馆</div>
+    <h1 class="title">回声 · 1970</h1>
+    <p class="sub">一个以中国科学技术大学为背景的原创解谜游戏（ARG）· 非官方同人 · 零外部资源</p>
+    <div class="progress" id="progress" aria-label="解封进度"></div>
+  </header>
+  <main id="app"></main>
+  <footer>
+    <p>《回声·1970》是非官方、非商业的原创同人解谜游戏，与中国科学技术大学无任何隶属或授权关系；
+    故事、人物（如「沈临」）与机构（「回声档案馆」）纯属虚构。
+    本游戏未使用校徽、校歌歌词、官方摄影等受保护素材；涉及的校史时间线（1958 年建校、1970 年学校迁至合肥）为公开史料。</p>
+    <p>代码以 <a href="LICENSE">MIT 许可</a>开源；故事文本以 CC BY-NC-SA 4.0 提供。
+    本页零外部请求，不收集任何数据，全部逻辑在你的浏览器里运行。
+    <a href="https://github.com/Principia-rain/echo-1970">源代码（GitHub）</a> ·
+    <a href="SPOILERS.md">完整攻略（剧透警告）</a> ·
+    <span class="linkish" id="resetLink">重置全部进度</span></p>
+  </footer>
+</div>
+<noscript><p style="text-align:center;color:#b3382e">这座档案馆需要 JavaScript 才能开门。</p></noscript>
+<script>
+"use strict";
+/*SHA-START*/
+/* SHA-256（FIPS 180-4），原创精简实现：兼容 file:// 离线运行，不依赖 Web Crypto */
+function utf8Bytes(str){
+  const out=[];
+  for(let i=0;i<str.length;i++){
+    let c=str.codePointAt(i);
+    if(c>0xffff){i++;}
+    if(c<0x80){out.push(c);}
+    else if(c<0x800){out.push(0xc0|(c>>6),0x80|(c&63));}
+    else if(c<0x10000){out.push(0xe0|(c>>12),0x80|((c>>6)&63),0x80|(c&63));}
+    else{out.push(0xf0|(c>>18),0x80|((c>>12)&63),0x80|((c>>6)&63),0x80|(c&63));}
+  }
+  return out;
+}
+function sha256Bytes(bytes){
+  const K=[0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,
+    0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,
+    0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,
+    0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,
+    0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,
+    0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,
+    0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,
+    0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];
+  let H=[0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];
+  const rotr=function(x,n){return (((x>>>n)|(x<<(32-n)))>>>0);};
+  const data=bytes.slice(); const bitLen=bytes.length*8;
+  data.push(0x80);
+  while(data.length%64!==56){data.push(0);}
+  const hi=Math.floor(bitLen/0x100000000), lo=bitLen>>>0;
+  data.push((hi>>>24)&255,(hi>>>16)&255,(hi>>>8)&255,hi&255,(lo>>>24)&255,(lo>>>16)&255,(lo>>>8)&255,lo&255);
+  const w=new Array(64);
+  for(let off=0;off<data.length;off+=64){
+    for(let t=0;t<16;t++){const j=off+t*4; w[t]=(((data[j]<<24)|(data[j+1]<<16)|(data[j+2]<<8)|data[j+3])>>>0);}
+    for(let t=16;t<64;t++){
+      const s0=rotr(w[t-15],7)^rotr(w[t-15],18)^(w[t-15]>>>3);
+      const s1=rotr(w[t-2],17)^rotr(w[t-2],19)^(w[t-2]>>>10);
+      w[t]=(w[t-16]+s0+w[t-7]+s1)>>>0;
+    }
+    let a=H[0],b=H[1],c=H[2],d=H[3],e=H[4],f=H[5],g=H[6],h=H[7];
+    for(let t=0;t<64;t++){
+      const S1=rotr(e,6)^rotr(e,11)^rotr(e,25);
+      const ch=(e&f)^(~e&g);
+      const t1=(h+S1+ch+K[t]+w[t])>>>0;
+      const S0=rotr(a,2)^rotr(a,13)^rotr(a,22);
+      const mj=(a&b)^(a&c)^(b&c);
+      const t2=(S0+mj)>>>0;
+      h=g;g=f;f=e;e=(d+t1)>>>0;d=c;c=b;b=a;a=(t1+t2)>>>0;
+    }
+    H=[(H[0]+a)>>>0,(H[1]+b)>>>0,(H[2]+c)>>>0,(H[3]+d)>>>0,(H[4]+e)>>>0,(H[5]+f)>>>0,(H[6]+g)>>>0,(H[7]+h)>>>0];
+  }
+  return H;
+}
+function sha256Hex(s){
+  return sha256Bytes(utf8Bytes(String(s)))
+    .map(function(x){return ("00000000"+x.toString(16)).slice(-8);})
+    .join("");
+}
+/*SHA-END*/
+
+/* ── 答案校验：加盐哈希，源码中无明文答案 ───────────────── */
+const SALT="echo1970::";
+function normAnswer(s){return String(s||"").toLowerCase().replace(/[\s，,、．\.。!！?？]/g,"");}
+function key(s){return sha256Hex(SALT+normAnswer(s));}
+
+const HASHES={
+  c1:["29fca5b6c16340e48cb28a55d0a587c6c3ac06247a8a02e5b8afabe8624d9049",
+      "60c7b95943443ffeac71af0ff0342150eec7d656c8c0c40ba2e8a02413ca814b",
+      "b3f3a1d87bd8d1220286932299267836c3fc7faec5cae44a9ede0b75e3ad9426",
+      "91fafbed86fd3bd9f75abfa95206e748085a4281c8f2ee88f6d4f07f8b979156"],
+  c2:["4a329ea60e75b26c54043e35d6c2350457ebcfb98284fb7899b768dea7466fca",
+      "78ad871c34d6bf3ae2542a780dd5776270a73ff203f9ab99806368897699c34b",
+      "92ec8412d5212a70aade95cf14ece2abeac886ada4c3c8280b615eec46cfa06a"],
+  c3:["f77e03689a56ada483a9fb883758dee7c7e499e2b005e4dbf1775c3df139a2a5"],
+  c4:["369cec537acba932d64197c0e7d5d3aa92774d55963c997c50a599e2dbe7abc8",
+      "550981b9de17a3e6a23fffdd889cd7ad929bfc08a013c12be9051cf0058549f6",
+      "0fb58f4bd088a22830e7a6a7f15dde62a89fb47df31272d3c2656c9e49d0aeef"],
+  c5:["5aba996c30919ae594b344d5dd97c2bab5e7b873fa1a1982fff590786013509b",
+      "62687a1a9444f80ae27771f6e85b76cbcd3cf5531adeacc3082f0ae090eed5da",
+      "49ee680ab1a02d333c69c919e9f16be2987b531d9cf02f66d65fcbc8c287e923"],
+  c6:["09be15d12b024f216e8f652d5bfc5e610ac37ea634aa431ded443bd02846c4ed",
+      "8078ba9bcf8a0569885046927f50863f1c1a030d2964820c73796bafd3d84a6f",
+      "b08549302592ded9672ad5c7e428733991997e29f815a6cc69969bb11d614095"],
+  c8:["7ad3181dd2c1bdd6371abe2417f2bd9b8fe55e56ebbf489dd3908be933a99088",
+      "a4672f7b7dac424b0dc3764c45ba26c03247fed2fa7f5583e8ac5ec68885152a",
+      "763834157ac3585d749d3c84e5edd27c6d1fde4306c7ae45bba3ee666fb07c8d"]
+};
+
+/* ── 档案数据：改编你自己的 ARG，只需改这里 ─────────────── */
+const CHAPTERS=[
+{
+  id:"c1", type:"input", seal:"一", label:"档案一", title:"扉页",
+  doc:`硬壳笔记本，深蓝布面，边角磨白。扉页上没有名字，只有一行褪色的钢笔字：
+
+『我们为何出发？
+写下刻在每个人心里的那四个字，门就开了。』
+
+扉页最下缘，还有一行更小的字，像是很多年后补上去的：
+「给能读到这里的你：慢慢来。」`,
+  question:"第一道封印的钥匙，是哪四个字？",
+  hints:[
+    "每年开学典礼上，这四个字都会被念起。",
+    "四个字。第二个字是「专」。",
+    "它是那八个字校训的前半句。"
+  ],
+  reveal:`封条无声地褪去。
+扉页背后，粘着一张对折的演算纸。
+
+（档案馆按：志愿者通常在第一道封印停留最久——因为它问的不是智力，是记忆。）`
+},
+{
+  id:"c2", type:"input", seal:"二", label:"档案二", title:"演算纸",
+  doc:`演算纸正面是电磁学作业，字迹工整得近乎固执。
+背面没有公式，只有一行「墨点与空白」，五个一组：
+
+■ ■ □ □ □　□ ■ □ ■ □　□ □ □ □ ■　□ ■ ■ ■ □　■ ■ □ □ □
+
+页脚一行小字：
+「我教学生用最笨的办法说话：两种墨水，五个一组。
+有墨为一，无墨为零；A 排第一。」`,
+  question:"这串墨点在说哪一个字？（中文或拼音均可）",
+  hints:[
+    "五组墨点，就是五个数：7、21、1、14、7。",
+    "按 A=1、B=2 往下数，每组是一个字母，连起来是一个拼音。",
+    "答案，是你此刻正用来读这行字的东西。"
+  ],
+  reveal:`光。
+他在纸的右下角画了一个小小的圆，圆里写着 E = hν。
+旁边还有半句话：「永远记住你看见的第一束——」
+后半句被撕掉了。撕口很旧。`
+},
+{
+  id:"c3", type:"input", seal:"三", label:"档案三", title:"借书卡",
+  doc:`一张旧图书馆的借书卡，五条记录，每条都盖了归还章：
+
+《力学》　　　　　　借出 1965.03.02
+《电磁学》　　　　　借出 1965.03.24
+《光学》　　　　　　借出 1965.05.11
+《热力学·统计物理》　借出 1965.09.28
+《原子物理学》　　　借出 1965.11.20
+
+卡片背面用曲别针别着一张便条：
+「书箱存进了旧馆地下室的柜子。
+柜号？是我最爱的常数——别误会，不是 e。
+我从来不太喜欢『增长』这种事，我更喜欢圆。」
+
+便条的最下面，画着一个很圆的圆。`,
+  question:"柜号是多少？",
+  hints:[
+    "不是 e（2.718…），是另一个更有名的常数。",
+    "圆的周长与直径之比。",
+    "π = 3.14159…，柜号是它开头的三位数字。"
+  ],
+  reveal:`314 号柜。
+你在想象里把它打开：一只旧书箱，一台用报纸裹了三层的收音机，一沓信。
+最上面，是一张明信片。`
+},
+{
+  id:"c4", type:"input", seal:"四", label:"档案四", title:"明信片",
+  doc:`明信片上的邮票早就没了，邮戳糊成一团。画面是一段伸向远方的铁轨。
+背面写着：
+
+「一人一张口。（打一字）
+谜底，是我下一站名字的第一个字。
+放心，这一站不是北京。
+车要开很久。我在靠窗的位置——
+窗外一直有你没见过的东西。」`,
+  question:"谜底是哪个字？",
+  hints:[
+    "把「一」「人」「口」三个零件上下叠起来看看。",
+    "一 + 人 + 口 = ？",
+    "谜底是「合肥」的第一个字。"
+  ],
+  reveal:`合。
+车轮碾过铁轨接缝的声音，隔着六十多年，传到了现在。
+明信片背面，还粘着一个牛皮纸信封。`
+},
+{
+  id:"c5", type:"input", seal:"五", label:"档案五", title:"信",
+  doc:`牛皮纸信封。封口处写着：「给我捡到这封信的人。」
+
+信纸上的字很奇怪，每一个字母都像被谁统一向右拧了三格：
+
+PB QDPH LV VKHQ OLQ.
+L ZULWH WR BRX IURP WKH WUDLQ.
+
+信封内侧有一行铅笔小字：
+「轮盘向右转了三格。想读我，就把它转回去。」`,
+  question:"写信人的名字是？（中文或拼音均可）",
+  hints:[
+    "把每个字母在字母表上向左数三位：D→A，E→B。",
+    "第一行解出来是 MY NAME IS ……",
+    "他姓沈。"
+  ],
+  reveal:`沈临。
+这个名字在档案馆的登记册上查不到——他像是刻意把自己藏进了谜题里，只肯留下声音。
+信封里还剩最后一张纸条：
+「如果你解开了前面的所有封印，去找那台收音机。
+它每晚八点都会说话。」`
+},
+{
+  id:"c6", type:"input", seal:"六", label:"档案六", title:"收音机",
+  doc:`收音机是整个档案袋里最重的一件，旋钮卡死在同一个位置。
+每晚八点，它准时醒来，把同一段声音重复三遍，然后沉默：
+
+· − − − −　　− − − − ·　　− − · · ·　　− − − − −
+
+底座上贴着一张纸条，字迹你已经认得了：
+「数字也能说话。」`,
+  question:"它在重复哪一年？",
+  hints:[
+    "这是摩尔斯电码，而且恰好是四个字符。",
+    "电码里，1 是 ·−−−−，9 是 −−−−·。",
+    "那是沈临跟着书箱和仪器上火车的那一年。"
+  ],
+  reveal:`1970 年 1 月。
+沈临把笔记本留在了北京——或者说，留给了某一位未来的读者。
+然后他跟着书箱、仪器和一所学校的命运，登上了南下的火车。
+
+档案袋的记录，到此为止。
+但最后一页里，还夹着一张对折的纸。`
+},
+{
+  id:"c7", type:"free", seal:"七", label:"档案七", title:"最后一页",
+  doc:`对折的纸上，是一句没有写完的话：
+
+「给五十年后的你：」
+
+后面是大片的空白。笔痕在纸面停了很久。
+
+现在轮到你了。写下你想对五十年后的人——或者五十年后的自己——说的话。
+这句话会封存在你的浏览器里，不会上传到任何地方。`,
+  question:"写下你想封存的话（200 字以内）"
+},
+{
+  id:"c8", type:"hidden", seal:"八", label:"档案八", title:"无门牌的房间",
+  doc:`这间屋子没有门牌。
+但你在盖这座房子的材料里，见过一串字符——
+用最老实、最古老的办法，把它打开。`,
+  question:"门后是什么？（两个字）",
+  hints:[
+    "Base64。",
+    "那串字符是 5Zue5aOw。",
+    "发出声音的人早已下车。可这座档案馆，为什么叫「回声」？"
+  ],
+  reveal:`回声。
+
+你听见了回声。
+
+1965 年的北京，1970 年的火车，2026 年的旧书市场——
+三段时空里，有人一直在发出声音，有人一直在侧耳倾听。
+
+声音会消失，回声不会。
+只要还有人愿意解一道题、读一封信、发出一次自己的声音，
+这座档案馆就永远不会闭馆。
+
+—— E-1970，全文完。
+
+（戏外还有三层：源代码注释、浏览器控制台、404 页面。
+你现在已经知道该用什么办法去读了。）`
+}
+];
+
+/* ── 状态与持久化 ───────────────────────────────────────── */
+const KEY="echo1970:v1";
+let state=load();
+function load(){
+  try{
+    const raw=localStorage.getItem(KEY);
+    if(!raw) return fresh();
+    const s=JSON.parse(raw);
+    return {
+      solved:Array.isArray(s.solved)?s.solved:[],
+      freeMsg:typeof s.freeMsg==="string"?s.freeMsg:"",
+      certAt:typeof s.certAt==="string"?s.certAt:"",
+      hints:s.hints&&typeof s.hints==="object"?s.hints:{},
+      wrong:s.wrong&&typeof s.wrong==="object"?s.wrong:{}
+    };
+  }catch(e){return fresh();}
+}
+function fresh(){return {solved:[],freeMsg:"",certAt:"",hints:{},wrong:{}};}
+function persist(){try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}}
+
+/* ── 小工具 ─────────────────────────────────────────────── */
+function $(sel){return document.querySelector(sel);}
+function div(cls){const d=document.createElement("div");d.className=cls;return d;}
+function mkBtn(text,cls){const b=document.createElement("button");b.textContent=text;if(cls)b.className=cls;return b;}
+function mainAllSolved(){
+  return CHAPTERS.filter(function(c){return c.type!=="hidden";})
+    .every(function(c){return state.solved.indexOf(c.id)>=0;});
+}
+function isEligible(c){
+  if(c.type!=="hidden") return true;
+  return mainAllSolved()&&state.freeMsg.length>0;
+}
+
+/* ── 渲染 ───────────────────────────────────────────────── */
+function render(){
+  const app=$("#app"); app.innerHTML="";
+  const prog=$("#progress"); prog.innerHTML="";
+  CHAPTERS.forEach(function(c){
+    const done=state.solved.indexOf(c.id)>=0;
+    const d=div("seal"+(done?" done":""));
+    d.textContent=done?c.seal:(c.type==="hidden"?"？":c.seal);
+    d.title=c.label+" · "+c.title;
+    prog.appendChild(d);
+  });
+
+  app.appendChild(introCard());
+
+  let gating=true;
+  CHAPTERS.forEach(function(c){
+    const solved=state.solved.indexOf(c.id)>=0;
+    if(solved){app.appendChild(solvedCard(c)); if(c.type==="hidden")app.appendChild(creditsCard()); return;}
+    if(!isEligible(c)||!gating){gating=false;app.appendChild(lockedCard(c));return;}
+    gating=false;
+    app.appendChild(activeCard(c));
+  });
+
+  app.appendChild(aboutCard());
+}
+
+function introCard(){
+  const el=div("card");
+  const tag=div("tag"); tag.textContent="E-1970 · 志愿者手记";
+  const doc=div("doc");
+  doc.textContent=
+`2026 年秋。合肥，旧书市场。
+你在一堆旧地图册下面，用十块钱买到一本深蓝色硬壳笔记本。
+摊主说，它是从一批「无主遗物」里流出来的。
+
+当晚，市档案馆的志愿者群里出现一条消息：
+「E-1970 号档案袋开始编目，今晚缺一名志愿者。」
+
+你报了名。
+
+——欢迎来到回声档案馆。
+这里收藏的，是所有没有被送达的声音。
+（往下翻，从第一件档案开始。）`;
+  el.appendChild(tag); el.appendChild(doc);
+  return el;
+}
+
+function docBlock(c){
+  const doc=div("doc"); doc.textContent=c.doc; return doc;
+}
+
+function solvedCard(c){
+  const el=div("card solved");
+  el.appendChild(stamp());
+  const tag=div("tag"); tag.textContent=c.label+" · 已编目";
+  const h=document.createElement("h2"); h.textContent=c.title;
+  el.appendChild(tag); el.appendChild(h);
+  el.appendChild(docBlock(c));
+  appendUsedHints(el,c);
+  if(c.type==="free"){ el.appendChild(certBlock()); el.appendChild(teaserBlock()); }
+  else{
+    const rv=div("reveal");
+    const rdoc=div("doc"); rdoc.textContent=c.reveal;
+    rv.appendChild(rdoc); el.appendChild(rv);
+  }
+  return el;
+}
+
+function activeCard(c){
+  const el=div("card active");
+  const tag=div("tag"); tag.textContent=c.label+" · 待解密";
+  const h=document.createElement("h2"); h.textContent=c.title;
+  el.appendChild(tag); el.appendChild(h); el.appendChild(docBlock(c));
+
+  if(c.type==="free"){
+    const q=document.createElement("p"); q.className="question"; q.textContent=c.question;
+    const ta=document.createElement("textarea"); ta.className="free";
+    ta.placeholder="写给五十年后……"; ta.maxLength=200;
+    const row=div("answer-row"); const btn=mkBtn("封存这句话");
+    const err=div("err"); err.setAttribute("aria-live","polite");
+    btn.addEventListener("click",function(){
+      const v=ta.value.trim();
+      if(v.length===0){err.textContent="一个字都不写吗？空白也是一种答案——但不是今天这种。";return;}
+      state.freeMsg=v;
+      state.certAt=new Date().toLocaleDateString("zh-CN");
+      if(state.solved.indexOf("c7")<0) state.solved.push("c7");
+      persist(); render(); scrollToActive();
+    });
+    row.appendChild(btn);
+    el.appendChild(q); el.appendChild(ta); el.appendChild(row); el.appendChild(err);
+    return el;
+  }
+
+  const q=document.createElement("p"); q.className="question"; q.textContent=c.question;
+  const row=div("answer-row");
+  const input=document.createElement("input"); input.className="answer";
+  input.placeholder="输入钥匙…"; input.autocomplete="off"; input.spellcheck=false;
+  const btn=mkBtn("解封");
+  const hintWrap=div("hints");
+  const hintBtn=mkBtn("需要提示","ghost");
+  const err=div("err"); err.setAttribute("aria-live","polite");
+  const flavors=["封印纹丝不动。","钥匙的形状不对。","再想想——线索就在文档里。","连着不对的话，试试「需要提示」。"];
+
+  function showHint(n){
+    if(n<1||n>c.hints.length) return;
+    while(hintWrap.children.length<n){
+      const hi=div("hint");
+      hi.textContent="提示 "+(hintWrap.children.length+1)+"："+c.hints[hintWrap.children.length];
+      hintWrap.appendChild(hi);
+    }
+  }
+  showHint(state.hints[c.id]||0);
+
+  function trySolve(){
+    const v=input.value;
+    if((c.hashes||[]).indexOf(key(v))>=0){
+      state.solved.push(c.id); persist(); render(); scrollToActive();
+    }else{
+      state.wrong[c.id]=(state.wrong[c.id]||0)+1;
+      if(state.wrong[c.id]>=2&&!(state.hints[c.id]>=1)){state.hints[c.id]=1;showHint(1);}
+      persist();
+      err.textContent=flavors[Math.min(state.wrong[c.id]-1,flavors.length-1)];
+      el.classList.remove("shake"); void el.offsetWidth; el.classList.add("shake");
+    }
+  }
+  btn.addEventListener("click",trySolve);
+  input.addEventListener("keydown",function(e){if(e.key==="Enter")trySolve();});
+  hintBtn.addEventListener("click",function(){
+    const n=Math.min((state.hints[c.id]||0)+1,c.hints.length);
+    state.hints[c.id]=n; persist(); showHint(n);
+  });
+
+  row.appendChild(input); row.appendChild(btn);
+  el.appendChild(q); el.appendChild(row); el.appendChild(hintWrap);
+  el.appendChild(hintBtn); el.appendChild(err);
+  setTimeout(function(){try{input.focus({preventScroll:true});}catch(e){}},60);
+  return el;
+}
+
+function lockedCard(c){
+  const el=div("card locked");
+  const tag=div("tag"); tag.textContent=c.label;
+  const h=document.createElement("h2"); h.textContent=c.title;
+  const note=document.createElement("p"); note.className="locked-note";
+  note.textContent=(c.type==="hidden")?"这一件物品，还没有出现。":"先解开前面的封印。";
+  el.appendChild(tag); el.appendChild(h); el.appendChild(note);
+  return el;
+}
+
+function stamp(){
+  const s=document.createElement("div"); s.className="stamp"; s.textContent="已解密";
+  return s;
+}
+function appendUsedHints(el,c){
+  const n=state.hints[c.id]||0;
+  if(n<1||!c.hints) return;
+  const wrap=div("hints");
+  for(let i=0;i<Math.min(n,c.hints.length);i++){
+    const hi=div("hint"); hi.textContent="提示 "+(i+1)+"："+c.hints[i];
+    wrap.appendChild(hi);
+  }
+  el.appendChild(wrap);
+}
+function certBlock(){
+  const el=div("cert");
+  el.innerHTML="<h3>回声档案馆 · 荣誉志愿者</h3>"+
+    "<p class='cert-line'>兹证明：你于 <b>"+String(state.certAt||"").replace(/[<>&]/g,"")+"</b> 完成 E-1970 号档案袋全部编目工作。</p>"+
+    "<p class='cert-line'>你封存的话：</p><p class='cert-msg'></p>"+
+    "<p class='cert-line'>声音会消失，回声不会。<br>—— 回声档案馆（虚构 · 2026）</p>";
+  el.querySelector(".cert-msg").textContent="「"+(state.freeMsg||"")+"」";
+  const btn=mkBtn("打印这张证书","ghost");
+  btn.addEventListener("click",function(){window.print();});
+  el.appendChild(btn);
+  return el;
+}
+function teaserBlock(){
+  const rv=div("reveal");
+  const doc=div("doc");
+  doc.textContent=
+`编目结束的那晚，老馆长说了一句奇怪的话：
+「这个档案袋，其实有八件物品。只是第八件，从来不挂在门牌上。」
+（有人会去读盖这座房子用的材料。）`;
+  rv.appendChild(doc);
+  return rv;
+}
+function creditsCard(){
+  const el=div("card");
+  el.appendChild(stamp());
+  const tag=div("tag"); tag.textContent="E-1970 · 全文完";
+  const h=document.createElement("h2"); h.textContent="谢谢你听完这个故事";
+  const doc=div("doc");
+  doc.textContent=
+`你现在也是回声档案馆的志愿者了。
+
+如果你喜欢这种游戏，不妨为别人也藏一个声音：
+改一个故事、埋一道谜题、留一句话——
+这个仓库的 README 里有十分钟改造指南。`;
+  el.appendChild(tag); el.appendChild(h); el.appendChild(doc);
+  return el;
+}
+function aboutCard(){
+  const el=document.createElement("details"); el.className="about";
+  const sum=document.createElement("summary"); sum.textContent="关于本游戏 · 版权说明";
+  const body=div("doc"); body.style.whiteSpace="normal";
+  const ul=document.createElement("ul");
+  [
+    "本游戏为非官方、非商业的同人原创作品，与中国科学技术大学无任何隶属或授权关系。",
+    "故事、人物（沈临）、机构（回声档案馆）与全部情节均属虚构，如有雷同纯属巧合。",
+    "未使用校徽、校歌歌词、官方摄影、字体文件或任何外部素材；本页零外部请求。",
+    "仅非商业性提及公开事实与短语：1958 年建校、1970 年学校迁至合肥等公开史料，以及校园地名。",
+    "代码：MIT 许可；故事文本：CC BY-NC-SA 4.0（署名-非商业-相同方式共享）。",
+    "谜题答案经加盐 SHA-256 校验，页面源代码中不出现明文答案；完整攻略见 SPOILERS.md（剧透警告）。"
+  ].forEach(function(t){const li=document.createElement("li");li.textContent=t;ul.appendChild(li);});
+  body.appendChild(ul); el.appendChild(sum); el.appendChild(body);
+  return el;
+}
+function scrollToActive(){
+  const a=document.querySelector(".card.active");
+  if(a&&a.scrollIntoView){try{a.scrollIntoView({behavior:"smooth",block:"center"});}catch(e){}}
+}
+
+/* ── 启动 ───────────────────────────────────────────────── */
+render();
+document.getElementById("resetLink").addEventListener("click",function(){
+  if(confirm("确定清空全部进度与封存的留言吗？")){
+    try{localStorage.removeItem(KEY);}catch(e){}
+    location.reload();
+  }
+});
+console.log("%cE-1970 回声档案馆","background:#b3382e;color:#f6eeda;padding:2px 8px;border-radius:2px;font-weight:bold");
+console.log("%c有些屋子不挂门牌。盖这座房子用的材料里，藏着一扇门。","color:#b3382e");
+</script>
+</body>
+</html>
