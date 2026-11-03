@@ -74,5 +74,25 @@ ok((html.match(/<script/g) || []).length === 1 && (html.match(/<\/script>/g) || 
 ok(html.includes("与中国科学技术大学无任何隶属或授权关系"), "免责声明存在");
 ok(html.includes("CC BY-NC-SA 4.0") && html.includes("MIT"), "双许可声明存在");
 
+// ── 5) 端到端：模拟浏览器判定路径（回归：HASHES 必须挂载到 CHAPTERS）──
+const chapM = html.match(/const CHAPTERS=(\[[\s\S]*?\n\]);/);
+ok(!!chapM, "CHAPTERS 块可提取");
+const CHAPTERS = new Function("return " + chapM[1] + ";")();
+const keyFull = (s) => ref(SALT + norm(s));
+// 复刻 index.html 中的挂载行：数据与校验在此汇合
+CHAPTERS.forEach(function (c) { if (HASHES[c.id]) { c.hashes = HASHES[c.id]; } });
+const sim = Object.fromEntries(CHAPTERS.map((c) => [c.id, c]));
+for (const c of CHAPTERS) {
+  if (c.type === "input" || c.type === "hidden") ok(Array.isArray(c.hashes) && c.hashes.length > 0, c.id + "(" + c.type + ") 已挂载 hashes");
+}
+// 模拟 trySolve 全路径：预期答案必须判过，错误答案必须判不过
+for (const [k, answers] of Object.entries(expect)) {
+  const hit = answers.some((a) => sim[k].hashes.includes(keyFull(a)));
+  ok(hit, k + " 模拟 trySolve 判定通过: " + answers[0]);
+}
+ok(!sim.c1.hashes.includes(keyFull("理实交融")), "c1 错误答案判不过");
+ok(!sim.c3.hashes.includes(keyFull("271")), "c3 错误答案(e)判不过");
+ok(html.includes("c.hashes=HASHES[c.id]"), "挂载行存在于源码");
+
 console.log("\n结果: " + pass + " 通过, " + fail + " 失败");
 process.exit(fail ? 1 : 0);

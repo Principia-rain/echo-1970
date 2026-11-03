@@ -398,6 +398,11 @@ L ZULWH WR BRX IURP WKH WUDLQ.
 }
 ];
 
+/* 把哈希挂到各道封印上：答案校验数据与剧情数据在此汇合 */
+CHAPTERS.forEach(function(c){
+  if(HASHES[c.id]){ c.hashes=HASHES[c.id]; }
+});
+
 /* ── 状态与持久化 ───────────────────────────────────────── */
 const KEY="echo1970:v1";
 let state=load();
